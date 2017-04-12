@@ -19,12 +19,14 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views
 from bLab.forms import LoginForm
+#from . import views
+from bLab.views import samplePlot
 
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    #url(r'^bLab/', include('bLab.urls')),
-    url(r'', include('bLab.urls')),
     url(r'^login/$', views.login, {'template_name': 'login.html', 'authentication_form': LoginForm}, name='login'),
     url(r'^logout/$', views.logout, {'next_page': '/login'}),
+    url(r'', include('bLab.urls')),
+    #url(r'^samplePlot/', samplePlot, name='samplePlot'),
 ]

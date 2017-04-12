@@ -1,9 +1,374 @@
-<html>
-    <head>
-        <title>Login</title>
-    </head>
-    <body>
-        <p>This will be the</p>
-        <strong>Single Patient Balance Report Page</strong>
-    </body>
-</html>
+{% extends 'base.html' %}
+
+
+<link href="https://cdn.pydata.org/bokeh/release/bokeh-0.12.5.min.css" rel="stylesheet" type="text/css">
+<link href="https://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.5.min.css" rel="stylesheet" type="text/css">
+<script src="https://cdn.pydata.org/bokeh/release/bokeh-0.12.5.min.js"></script>
+<script src="https://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.5.min.js"></script>
+
+{% block content %}
+    <h3><p style="text-align: center;">Balance Report</p></h3>
+    <br><br>
+
+<div class="row">
+  <div class="col-sm-12">
+    <form class="form-horizontal">
+              <div class="form-group">
+                <label class="control-label col-sm-1" for="name">Name:</label>
+                <div class="col-sm-1">
+                  <p class="form-control-static">John Doe</p>
+                </div>
+               <label class="control-label col-sm-1" for="age">Age:</label>
+                <div class="col-sm-1">
+                  <p class="form-control-static">25</p>
+                </div>
+               <label class="control-label col-sm-1" for="gender">Gender:</label>
+                <div class="col-sm-1">
+                  <p class="form-control-static">Male</p>
+                </div>
+               <label class="control-label col-sm-1" for="tester">Tester:</label>
+                <div class="col-sm-1">
+                  <p class="form-control-static">Jane Doe</p>
+                </div>
+
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-1" for="height">Height:</label>
+                <div class="col-sm-1">
+                  <p class="form-control-static">5'10"</p>
+                </div>
+                <label class="control-label col-sm-1" for="weight">Weight:</label>
+                <div class="col-sm-1">
+                  <p class="form-control-static">145</p>
+                </div>
+                <label class="control-label col-sm-1" for="feet length">Feet Length:</label>
+                <div class="col-sm-1">
+                  <p class="form-control-static">20</p>
+                </div>
+                <label class="control-label col-sm-1" for="dof">Date of Test:</label>
+                <div class="col-sm-1">
+                  <p class="form-control-static">06/06/2007</p>
+                </div>
+              </div>
+            </form>
+
+
+
+
+    <div class="row">
+      <div class="col-sm-6"><table class="table table-bordered">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Pt</th>
+              <th>Ctrls</th>
+              <th>%</th>
+              <th>Pt</th>
+              <th>Ctrls</th>
+              <th>%</th>
+              <th>Pt</th>
+              <th>Ctrls</th>
+              <th>%</th>
+              <th>Pt</th>
+              <th>Ctrls</th>
+              <th>%</th>
+              <th>Pt</th>
+              <th>Ctrls</th>
+              <th>%</th>
+
+
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Area</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <th scope="row">Range AP</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <th scope="row">Range ML</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <th scope="row">MV AP</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+                <th scope="row">MV ML</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <th scope="row">RMS AP</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <th scope="row">RMS ML</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+                <th scope="row">F80 AP (Hz)</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <th scope="row">F80 ML (Hz)</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <th scope="row">Sent AP</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+                <th scope="row">Sent ML</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <th scope="row">CrossEnt</th>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+                </div>
+      <div class="col-sm-6">
+
+      <div id="chart_area1">
+
+      </div>
+
+          
+        <script type="text/javascript">
+          $(document).ready(
+            function() {
+                //$("#jqtest").html("JQuery installed successfully 1!");
+                $.get('/samplePlot/', function (data) {$('#chart_area1').append(data);});
+            }
+          );
+          </script>
+
+
+
+    </div>
+</div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6">
+                    <label class="control-label" for="files1">Files used to compute Ctrls results:</label>
+                      <p class="form-control-static"; style="color:limegreen">12</p>
+
+                        <label class="control-label" for="gender1">Females in Population:</label>
+                            <p class="form-control-static"; style="color:limegreen">7</p>
+
+
+                        <label class="control-label" for="gender2">Males in Pop:</label>
+                          <p class="form-control-static"; style="color:limegreen">7</p>
+
+                        <label class="control-label" for="age1">Age Distribution:</label>
+                          <p class="form-control-static"; style="color:limegreen">25</p>
+
+                          <label class="control-label" for="age2">to</label>
+                          <p class="form-control-static"; style="color:limegreen">47</p>
+
+                        <label class="control-label" for="gender2">Search Words:</label>
+                          <p class="form-control-static"; style="color:limegreen">Lorem ipsum dolor sit amet</p>
+                      </div>
+
+
+        <div class="col-sm-6">
+            <label class="control-label"; style="color:cornflowerblue", for="tmrec"><strong><h4>Time Recorded</strong></h4></label><br>
+                    <label class="control-label" for="biOpen">Bipedal Eyes Opened:</label>
+                      <p class="form-control-static"; style="color:limegreen">3:03</p>
+
+                    <label class="control-label" for="biClosed">Bipedal Eyes Closed:</label>
+                      <p class="form-control-static"; style="color:limegreen">5:01</p>
+
+                    <label class="control-label" for="uniOpen">Unipedal Eyes Opened:</label>
+                      <p class="form-control-static"; style="color:limegreen">6:03</p>
+
+                    <label class="control-label" for="uniClosed">Unipedal Eyes Closed:</label>
+                      <p class="form-control-static"; style="color:limegreen">7:01</p>
+                    </div>
+    </div>
+</div>
+
+
+
+
+
+{% endblock %}
+
+
+
+<div class="col-sm-4"><div class="btn-group-vertical">
+                    <button type="button" class="btn btn-info">Print</button>
+                    <button type="button" class="btn btn-info">Back</button>
+                    <button type="button" class="btn btn-info">End</button>
+                </div></div>
