@@ -1,31 +1,75 @@
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, render_to_response
+import os
+import scipy.io
+from django.http import HttpResponse
+from django.shortcuts import render
+from jchart import Chart
+from jchart.config import Axes, DataSet
+
+import pymongo
+from pymongo import *
+
 
 @login_required(login_url="login/")
 def home(request):
-    #print('in home')
     return render(request,"home.html")
 
-# Create your views here.
 
-# this login required decorator is to not allow to any
-# view without authenticating
+
+
+
+
+#THIS IS NEW STUFF FOR FILE PICKER!!!!!!
+@login_required()
+def uploadPage(request):
+    return render(request, 'upload_page.html', {'what': 'Django File Upload'})
+
+
+def loadFile(filename):
+    mat = scipy.io.loadmat(filename)
+    record_doc = {
+        'header': mat['__header__'],
+        'version': mat['__version__'],
+        'globals': mat['__globals__'],
+        'patient_id': mat['final'][0][0][0],
+        'first_name': mat['final'][1][0][0],
+        'last_name': mat['final'][2][0][0]}
+    return record_doc
+
+
+def handle_uploaded_file(file, filename):
+    if not os.path.exists('upload/'):
+        os.mkdir('upload/')
+
+    with open('upload/' + filename, 'wb+') as destination:
+        for chunk in file.chunks():
+            destination.write(chunk)
+
+    # setup mongoDB connection
+
+    #client = MongoClient('mongodb://localhost:27017/')
+    #db = client.test_db
+    #col = db.test_collection
+
+    # read .mat file contents into a dictionary
+    #rec = loadFile('final.mat')
+
+def upload(request):
+    if request.method == 'POST':
+        handle_uploaded_file(request.FILES['file'], str(request.FILES['file']))
+        return HttpResponse("Successful")
+
+    return HttpResponse("Failed")
+
+
+
+
+
 
 @login_required()
 def selector(request):
     return render(request, 'bLab/selector.html', {})
-
-@login_required()
-def initialize(request):
-    # setup mongoDB connection
-    print('about to connect to pymongo')
-
-    client = MongoClient('mongodb://localhost:27017/')
-    db = client.test_db
-    col = db.test_collection
-
-    print('pymongo connection created')
-
-    return render(request, 'bLab/selection.html', {})
 
 @login_required()
 def single_patient_search(request):
@@ -44,10 +88,8 @@ def group_report(request):
     return render(request, 'bLab/group_report.html', {})
 
 
-from django.shortcuts import render
 
-from jchart import Chart
-from jchart.config import Axes, DataSet
+
 
 class LineChart(Chart):
     chart_type = 'bubble'
@@ -80,22 +122,3 @@ def some_view(request):
     render(request, 'single_patient_BR.html', {
         'line_chart': LineChart(),
     })
-
-import scipy.io
-from pymongo import *
-
-@login_required()
-def loadFile(filename):
-    mat = scipy.io.loadmat(filename)
-
-    # print(type(mat))
-    # print(mat.keys())
-
-    record_doc = {
-        'header': mat['__header__'],
-        'version': mat['__version__'],
-        'globals': mat['__globals__'],
-        'patient_id': mat['final'][0][0][0],
-        'first_name': mat['final'][1][0][0],
-        'last_name': mat['final'][2][0][0]}
-    return record_doc
