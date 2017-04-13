@@ -1,10 +1,6 @@
 {% extends 'base.html' %}
 
-
-<link href="https://cdn.pydata.org/bokeh/release/bokeh-0.12.5.min.css" rel="stylesheet" type="text/css">
-<link href="https://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.5.min.css" rel="stylesheet" type="text/css">
-<script src="https://cdn.pydata.org/bokeh/release/bokeh-0.12.5.min.js"></script>
-<script src="https://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.5.min.js"></script>
+{% load static %}
 
 {% block content %}
     <h3><p style="text-align: center;">Balance Report</p></h3>
@@ -52,8 +48,6 @@
                 </div>
               </div>
             </form>
-
-
 
 
     <div class="row">
@@ -296,28 +290,50 @@
             </tr>
           </tbody>
         </table>
-                </div>
-      <div class="col-sm-6">
-
-      <div id="chart_area1">
-
       </div>
 
-          
-        <script type="text/javascript">
-          $(document).ready(
-            function() {
-                //$("#jqtest").html("JQuery installed successfully 1!");
-                $.get('/samplePlot/', function (data) {$('#chart_area1').append(data);});
-            }
-          );
-          </script>
+    <div class="col-sm-6">
+        <div id="graph1" style="margin: 0 auto; width:450px;">
+        <script src = "{% static 'js/Chart.bundle.min.js' %}"></script>
+        <script src = "{% static 'js/jquery-3.2.1.min.js' %}"></script>
 
+        {% load jchart %}
+        {% render_chart 'line_chart' %}
+        </div>
 
+    <div class="col-sm-6">
+
+                <div id="graph1" style="margin: 0 auto; width:250px;">
+                {% load jchart %}
+                {% render_chart 'line_chart' %}
+                </div>
+
+                <div id="graph1" style="margin: 0 auto; width:250px;">
+                {% load jchart %}
+                {% render_chart 'line_chart' %}
+                </div>
+        </div>
+
+    <div class="col-sm-6">
+
+            <div id="graph1" style="margin: 0 auto; width:250px;">
+            {% load jchart %}
+            {% render_chart 'line_chart' %}
+            </div>
+
+            <div id="graph1" style="margin: 0 auto; width:250px;">
+            {% load jchart %}
+            {% render_chart 'line_chart' %}
+            </div>
+    </div>
 
     </div>
+
+    </div>
+
 </div>
-</div>
+
+
 <div class="container">
     <div class="row">
         <div class="col-sm-6">
@@ -357,15 +373,10 @@
                       <p class="form-control-static"; style="color:limegreen">7:01</p>
                     </div>
     </div>
+
 </div>
 
-
-
-
-
 {% endblock %}
-
-
 
 <div class="col-sm-4"><div class="btn-group-vertical">
                     <button type="button" class="btn btn-info">Print</button>

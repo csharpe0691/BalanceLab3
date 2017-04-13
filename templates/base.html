@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load static %}
 
 <!DOCTYPE html>
 <html>
@@ -8,6 +9,8 @@
                 <title>Auth Demo</title>
                 <!-- Core CSS - Include with every page -->
                 <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+                <link rel="shortcut icon" href="{% static 'favicon/favicon.ico' %}"/>
+
                 </head>
                 <body>
                     <nav class="navbar navbar-default">
@@ -29,21 +32,17 @@
                                         </a>
                                         <ul class="dropdown-menu" role="menu">
                                             <li>
-                                                <a href="/home">home</a>
+                                                <a href="/">home</a>
                                             </li>
                                             <li>
-                                                <a href="#">Selector</a>
+                                                <a href="single_patient_search">Single Patient</a>
                                             </li>
                                             <li>
-                                                <a href="#">Single Patient</a>
-                                            </li>
-                                            <li class="divider"></li>
-                                            <li>
-                                                <a href="#">Group Comparison</a>
+                                                <a href="group_compar">Group Comparison</a>
                                             </li>
                                             <li class="divider"></li>
                                             <li>
-                                                <a href="/logout">Logout</a>
+                                                <a href="/logout">Logout</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -62,15 +61,14 @@
                 {% block content %}
                 {% endblock %}
 
-
-
-                    <!-- Core Scripts - Include with every page -->
-                    <script src = "{% static 'js/jquery.min.js' %}"></script>
-                    <script src = "{% static 'js/bootstrap.min.js' %}"></script>
-                    <script src="{% static 'jquery-3.2.1.min.js' %}"></script>
+            <script src = "{% static 'js/jquery-3.2.1.min.js' %}"></script>
+            <script src = "{% static 'js/bootstrap.min.js' %}"></script>
 
         {% block javascript %}
-        {% endblock %}
+            <!-- Core Scripts - Include with every page -->
+
+
+       {% endblock %}
 
             </body>
         </html>

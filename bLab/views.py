@@ -1,65 +1,11 @@
-from django.shortcuts import render, render_to_response
-from bokeh.plotting import figure, output_file, show
-from bokeh.embed import components
 from django.contrib.auth.decorators import login_required
-import sys
-
-from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QLineEdit, QFileDialog
-from PyQt5.QtGui import QIcon
-
 
 @login_required(login_url="login/")
 def home(request):
     #print('in home')
     return render(request,"home.html")
 
-
-class filePicker(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.title = 'PyQt5 file dialogs - pythonspot.com'
-        self.left = 10
-        self.top = 10
-        self.width = 640
-        self.height = 480
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
-
-        #self.openFileNameDialog()
-
-        #self.show()
-
-    def openFileNameDialog(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
-                                                  "All Files (*);;MATLAB Files (*.mat)", options=options)
-        if fileName:
-            #print(fileName)
-            #sys.exit(app.exec_())
-            return fileName
-        else:
-            return ''
-
-def loadFile(pickedFile):
-    #parse the file and write the data into mongoDB
-    print(pickedFile)
-
-def pickFile():
-    print('foo')
-    app = QApplication(sys.argv)
-    ex = filePicker()
-    pickedFile = ex.openFileNameDialog()
-    print('picked file:', pickedFile)
-    if pickedFile != '':
-       loadFile(pickedFile)
-
-
 # Create your views here.
-
 
 # this login required decorator is to not allow to any
 # view without authenticating
@@ -78,7 +24,6 @@ def initialize(request):
     col = db.test_collection
 
     print('pymongo connection created')
-
 
     return render(request, 'bLab/selection.html', {})
 
@@ -99,39 +44,44 @@ def group_report(request):
     return render(request, 'bLab/group_report.html', {})
 
 
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render
 
-from bokeh.plotting import figure, output_file, show
-from bokeh.embed import components
-from bokeh.resources import INLINE
+from jchart import Chart
+from jchart.config import Axes, DataSet
 
-def samplePlot(request):
-    print('in samplePlot')
-    x = [1, 3, 5, 7, 9, 11, 13]
-    y = [1, 2, 3, 4, 5, 6, 7]
-    title = 'y = f(x)'
+class LineChart(Chart):
+    chart_type = 'bubble'
+    legend = {
+        'display' : False
+    }
 
-    plot = figure(title=title,
-                  x_axis_label='X-Axis',
-                  y_axis_label='Y-Axis',
-                  plot_width=100,
-                  plot_height=100)
-    print('in samplePlot 2')
-    plot.line(x, y, legend='f(x)', line_width=2)
-    # Store components
-    script, div = components(plot) #, INLINE)
+    def get_datasets(self, **kwargs):
+        data = [{'y': 8, 'x': 3, 'r': 2},
+                 {'y': 11, 'x': 5, 'r': 2},
+                 {'y': 12, 'x': 8, 'r': 2},
+                 {'y': 11, 'x': 11, 'r': 2},
+                 {'y': 7, 'x': 11, 'r': 2},
+                 {'y': 6, 'x': 14, 'r': 2},
+                 {'y': 2, 'x': 12, 'r': 2},
+                 {'y': 4, 'x': 9, 'r': 2},
+                 {'y': 3, 'x': 6, 'r': 2},
+                {'y': 8, 'x': 3, 'r': 2}]
+        scales = {
+            'xAxes': [Axes(type='linear', position='bottom')],
+        }
+        return [
+            DataSet(type='line',
+                    label='Line',
+                    borderColor='red',
+                    data=data)
+        ]
 
-    # Feed them to the Django template.
-    return HttpResponse(script+div)
-
-
-
-from django.http import HttpResponse
-
-
+def some_view(request):
+    render(request, 'single_patient_BR.html', {
+        'line_chart': LineChart(),
+    })
 
 import scipy.io
-import pymongo
 from pymongo import *
 
 @login_required()
