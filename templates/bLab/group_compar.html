@@ -1,47 +1,103 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
+
+<script src="{% static 'js/jquery-3.2.1.min.js'%}"></script>
+
+<script type="text/javascript">
+
+    function fixedEncodeURIComponent(str) {
+      return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
+        return '%' + c.charCodeAt(0).toString(16);
+      });
+    }
+
+    function runGroupsQuery() {
+
+        //put widget values into URL
+        //queryString = String("/single_query/" +
+        queryStringG = String("/" +
+                fixedEncodeURIComponent(document.getElementById("genderValG1").value)  + "/"  +
+                fixedEncodeURIComponent(document.getElementById("age1ValG1").value) +  "/"  +
+                fixedEncodeURIComponent(document.getElementById("age2ValG1").value) + "/" +
+                fixedEncodeURIComponent(document.getElementById("key1G1").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("key2G1").value) + "/" +
+                fixedEncodeURIComponent(document.getElementById("key3G1").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("key4G1").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("key5G1").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("genderValG2").value)  + "/"  +
+                fixedEncodeURIComponent(document.getElementById("age1ValG2").value) +  "/"  +
+                fixedEncodeURIComponent(document.getElementById("age2ValG2").value) + "/" +
+                fixedEncodeURIComponent(document.getElementById("key1G2").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("key2G2").value) + "/" +
+                fixedEncodeURIComponent(document.getElementById("key3G2").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("key4G2").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("key5G2").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("genderValG3").value)  + "/"  +
+                fixedEncodeURIComponent(document.getElementById("age1ValG3").value) +  "/"  +
+                fixedEncodeURIComponent(document.getElementById("age2ValG3").value) + "/" +
+                fixedEncodeURIComponent(document.getElementById("key1G3").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("key2G3").value) + "/" +
+                fixedEncodeURIComponent(document.getElementById("key3G3").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("key4G3").value) + "/"  +
+                fixedEncodeURIComponent(document.getElementById("key5G3").value) + "/"  +
+        '/') ;
+
+        // load single query results report page
+        window.location.href = "/group_report" + queryStringG;
+    }
+</script>
+
+
+
     <h3><p style="text-align: center;color:red">Group Comparison</p></h3>
     <br>
-    <p style="text-align: center;"><a href="http://127.0.0.1:8080/group_report"  class="btn btn-info" style="height:50px; width:100px">Run</a></p>
+
+
+
+    <p><p style="text-align: center;"><button onclick="runGroupsQuery()" class="btn btn-info" style="height:50px; width:100px">Run</button>
+
+    <p id="groups_query"></p>
+
+
 
     <br><br>
 <div class="container">
     <div class="col-sm-4"><h4><strong>Group 1</strong></h4>
         <br>
-        <h5>Gender:</h5><input type="text" name="name" value="" maxlength="90" style="width:150px;">
+        <h5>Gender:</h5><input type="text" id="genderValG1" value="gender" maxlength="90" style="width:150px;">
         <br>
-        <h5>Age:</h5><input type="text" name="name" value="" maxlength="90" style="width:150px;"><h4>to</h4><input type="text" name="name" value="" maxlength="90" style="width:150px;">
+        <h5>Age:</h5><input type="text" id="age1ValG1" value="12" maxlength="90" style="width:150px;"><h4>to</h4><input type="text" id="age2ValG1" value="" maxlength="90" style="width:150px;">
         <br>
-        <h5>Keywords:</h5><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
+        <h5>Keywords:</h5><input type="text" id="key1G1" value="search word1" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key2G1" value="search word2" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key3G1" value="search word3" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key4G1" value="search word4" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key5G1" value="search word5" maxlength="90" style="width:150px;">
         </div>
         <div class="col-sm-4"><h4><strong>Group 2</strong></h4>
         <br>
-        <h5>Gender:</h5><input type="text" name="name" value="" maxlength="90" style="width:150px;">
+        <h5>Gender:</h5><input type="text" id="genderValG2" value="gender" maxlength="90" style="width:150px;">
         <br>
-        <h5>Age:</h5><input type="text" name="name" value="" maxlength="90" style="width:150px;"><h4>to</h4><input type="text" name="name" value="" maxlength="90" style="width:150px;">
+        <h5>Age:</h5><input type="text" id="age1ValG2" value="12" maxlength="90" style="width:150px;"><h4>to</h4><input type="text" id="age2ValG2" value="" maxlength="90" style="width:150px;">
         <br>
-        <h5>Keywords:</h5><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
+        <h5>Keywords:</h5><input type="text" id="key1G2" value="search word1" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key2G2" value="search word2" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key3G2" value="search word3" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key4G2" value="search word4" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key5G2" value="search word5" maxlength="90" style="width:150px;">
         </div>
         <div class="col-sm-4"><h4><strong>Group 3</strong></h4>
         <br>
-        <h5>Gender:</h5><input type="text" name="name" value="" maxlength="90" style="width:150px;">
+        <h5>Gender:</h5><input type="text" id="genderValG3" value="gender" maxlength="90" style="width:150px;">
         <br>
-        <h5>Age:</h5><input type="text" name="name" value="" maxlength="90" style="width:150px;"><h4>to</h4><input type="text" name="name" value="" maxlength="90" style="width:150px;">
+        <h5>Age:</h5><input type="text" id="age1ValG3" value="12" maxlength="90" style="width:150px;"><h4>to</h4><input type="text" id="age2ValG3" value="" maxlength="90" style="width:150px;">
         <br>
-        <h5>Keywords:</h5><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
-        <br><input type="text" name="name" value="" maxlength="90" style="width:150px;">
+        <h5>Keywords:</h5><input type="text" id="key1G3" value="search word1" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key2G3" value="search word2" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key3G3" value="search word3" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key4G3" value="search word4" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key5G3" value="search word5" maxlength="90" style="width:150px;">
         </div>
         </div>
 {% endblock %}

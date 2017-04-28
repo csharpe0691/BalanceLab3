@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
 
-{% block content %}
+{{% block content %}
 
 <head>
-    <title>Django File Upload</title>
+    <title>Balance Lab File Upload</title>
     <style>
     h1 {
       font-size: 2em;
@@ -16,7 +16,10 @@
       margin: auto;
     }
     </style>
+
 </head>
+
+
 
 <div class="container">
     <div class="row">
@@ -29,16 +32,25 @@
               <table>
                 <tr>
                   <td>
-                    <form action="{{ request.build_absolute_uri }}../upload/" method="POST" enctype="multipart/form-data">
+                    <form action="{{ request.build_absolute_uri }}/../upload/" method="POST" enctype="multipart/form-data">
                       {% csrf_token %}
-                      <input type="file" name="file"/>
+                      <input type="file" accept=".mat" name="file"/>
                       <br />
-                      <input type="submit" value="Upload File" />
+                      <input type="submit" value="Upload File"/>
                     </form>
+
                   </td>
                 </tr>
               </table><br><br><br>
+
             <p><p style="text-align: right;"><a href="http://127.0.0.1:8080/"  class="btn btn-info" style="height:50px; width:100px">Back</a></p>
 
         </div></div></div>
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <p {% if message.tags %} class="{{ message.tags }}"{% endif %} style="text-align:center" >{{ message }}</p>
+            {% endfor %}
+        </ul>
+    {% endif %}
 {% endblock %}

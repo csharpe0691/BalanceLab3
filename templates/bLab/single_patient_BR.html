@@ -1,385 +1,101 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load django_tables2 %}
+{% load render_table from django_tables2 %}
+
+<script src="{% static 'js/jquery-3.2.1.min.js'%}"></script>
+<link href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.5.min.css" rel="stylesheet" type="text/css">
 
 {% block content %}
-    <h3><p style="text-align: center;">Balance Report</p></h3>
-    <br><br>
 
-<div class="row">
-  <div class="col-sm-12">
-    <form class="form-horizontal">
-              <div class="form-group">
-                <label class="control-label col-sm-1" for="name">Name:</label>
-                <div class="col-sm-1">
-                  <p class="form-control-static">John Doe</p>
-                </div>
-               <label class="control-label col-sm-1" for="age">Age:</label>
-                <div class="col-sm-1">
-                  <p class="form-control-static">25</p>
-                </div>
-               <label class="control-label col-sm-1" for="gender">Gender:</label>
-                <div class="col-sm-1">
-                  <p class="form-control-static">Male</p>
-                </div>
-               <label class="control-label col-sm-1" for="tester">Tester:</label>
-                <div class="col-sm-1">
-                  <p class="form-control-static">Jane Doe</p>
-                </div>
+<h3><p style="text-align: center;">Balance Report</p></h3><br><br>
 
-              </div>
-
-              <div class="form-group">
-                <label class="control-label col-sm-1" for="height">Height:</label>
-                <div class="col-sm-1">
-                  <p class="form-control-static">5'10"</p>
-                </div>
-                <label class="control-label col-sm-1" for="weight">Weight:</label>
-                <div class="col-sm-1">
-                  <p class="form-control-static">145</p>
-                </div>
-                <label class="control-label col-sm-1" for="feet length">Feet Length:</label>
-                <div class="col-sm-1">
-                  <p class="form-control-static">20</p>
-                </div>
-                <label class="control-label col-sm-1" for="dof">Date of Test:</label>
-                <div class="col-sm-1">
-                  <p class="form-control-static">06/06/2007</p>
-                </div>
-              </div>
-            </form>
-
-
-    <div class="row">
-      <div class="col-sm-6"><table class="table table-bordered">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Pt</th>
-              <th>Ctrls</th>
-              <th>%</th>
-              <th>Pt</th>
-              <th>Ctrls</th>
-              <th>%</th>
-              <th>Pt</th>
-              <th>Ctrls</th>
-              <th>%</th>
-              <th>Pt</th>
-              <th>Ctrls</th>
-              <th>%</th>
-              <th>Pt</th>
-              <th>Ctrls</th>
-              <th>%</th>
-
-
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">Area</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <th scope="row">Range AP</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <th scope="row">Range ML</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <th scope="row">MV AP</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-                <th scope="row">MV ML</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <th scope="row">RMS AP</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <th scope="row">RMS ML</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-                <th scope="row">F80 AP (Hz)</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <th scope="row">F80 ML (Hz)</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <th scope="row">Sent AP</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-                <th scope="row">Sent ML</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <th scope="row">CrossEnt</th>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-    <div class="col-sm-6">
-        <div id="graph1" style="margin: 0 auto; width:450px;">
-        <script src = "{% static 'js/Chart.bundle.min.js' %}"></script>
-        <script src = "{% static 'js/jquery-3.2.1.min.js' %}"></script>
-
-        {% load jchart %}
-        {% render_chart 'line_chart' %}
+<div>
+    <div style="margin-left: 40px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-3"> <strong>First Name:</strong> {{ sd.first_name }}</div>
+                <div class="col-sm-3"> <strong>Last Name:</strong> {{ sd.last_name }}</div>
+                <div class="col-sm-3"> <strong>Gender:</strong> {{ sd.gender }}</div>
+                <div class="col-sm-3"> <strong>Age:</strong> {{ sd.age }}</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3"> <strong>Address:</strong> {{ sd.address }}</div>
+                <div class="col-sm-3"> <strong>City:</strong> {{ sd.city }}</div>
+                <div class="col-sm-3"> <strong>State:</strong> {{ sd.state }}</div>
+                <div class="col-sm-3"> <strong>Phone:</strong> {{ sd.phone }}</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3"> <strong>Time of Bipedal Eyes Opened:</strong> {{ sd.BEOSPEEDAP }}</div>
+                <div class="col-sm-3"> <strong>Time of Bipedal Eyes Closed:</strong> {{ sd.BECSPEEDAP }}</div>
+                <div class="col-sm-3"> <strong>Time of Unipedal Eyes Opened:</strong> {{ sd.UEOSPEEDAP }}</div>
+                <div class="col-sm-3"> <strong>Time of Unipedal Eyes Closed:</strong> {{ sd.UECSPEEDAP }}</div>
+            </div><br>
         </div>
+    </div>
+    <p></p>
+    <div style="margin-left: 40px; ">
+    {% render_table st %}
+    </div>
+    <p></p>
 
-    <div class="col-sm-6">
-
-                <div id="graph1" style="margin: 0 auto; width:250px;">
-                {% load jchart %}
-                {% render_chart 'line_chart' %}
-                </div>
-
-                <div id="graph1" style="margin: 0 auto; width:250px;">
-                {% load jchart %}
-                {% render_chart 'line_chart' %}
-                </div>
-        </div>
-
-    <div class="col-sm-6">
-
-            <div id="graph1" style="margin: 0 auto; width:250px;">
-            {% load jchart %}
-            {% render_chart 'line_chart' %}
+    <br>
+    <div style="margin-left: 40px; ">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-3"> <strong>Ctrl Files used to compute results:</strong> {{ sd2.ctrlNum }}</div>
+                <div class="col-sm-3"> <strong>Number of females:</strong> {{ sd2.femaleCount }}</div>
+                <div class="col-sm-3"> <strong>Number of males:</strong> {{ sd2.maleCount }}</div>
+                <div class="col-sm-3"> <strong>Age:</strong> {{ sd2.ageMin }} <strong> to </strong>{{ sd2.ageMax }}</div>
+            </div>
+            <div class="row">
+                <div align="right" class="col-sm-8"> <strong>Search Words:</strong> {{ sd.search_word_1 }}<strong> , </strong>{{ sd.search_word_2 }}<strong> , </strong>{{ sd.search_word_3 }}<strong> , </strong>{{ sd.search_word_4 }}<strong> , </strong>{{ sd.search_word_5 }}</div>
+            <br>
             </div>
 
-            <div id="graph1" style="margin: 0 auto; width:250px;">
-            {% load jchart %}
-            {% render_chart 'line_chart' %}
-            </div>
-    </div>
+    <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.5.min.js"></script>
 
-    </div>
+    <div class="container">
 
-    </div>
-
-</div>
-
-
-<div class="container">
-    <div class="row">
-        <div class="col-sm-6">
-                    <label class="control-label" for="files1">Files used to compute Ctrls results:</label>
-                      <p class="form-control-static"; style="color:limegreen">12</p>
-
-                        <label class="control-label" for="gender1">Females in Population:</label>
-                            <p class="form-control-static"; style="color:limegreen">7</p>
-
-
-                        <label class="control-label" for="gender2">Males in Pop:</label>
-                          <p class="form-control-static"; style="color:limegreen">7</p>
-
-                        <label class="control-label" for="age1">Age Distribution:</label>
-                          <p class="form-control-static"; style="color:limegreen">25</p>
-
-                          <label class="control-label" for="age2">to</label>
-                          <p class="form-control-static"; style="color:limegreen">47</p>
-
-                        <label class="control-label" for="gender2">Search Words:</label>
-                          <p class="form-control-static"; style="color:limegreen">Lorem ipsum dolor sit amet</p>
-                      </div>
-
-
-        <div class="col-sm-6">
-            <label class="control-label"; style="color:cornflowerblue", for="tmrec"><strong><h4>Time Recorded</strong></h4></label><br>
-                    <label class="control-label" for="biOpen">Bipedal Eyes Opened:</label>
-                      <p class="form-control-static"; style="color:limegreen">3:03</p>
-
-                    <label class="control-label" for="biClosed">Bipedal Eyes Closed:</label>
-                      <p class="form-control-static"; style="color:limegreen">5:01</p>
-
-                    <label class="control-label" for="uniOpen">Unipedal Eyes Opened:</label>
-                      <p class="form-control-static"; style="color:limegreen">6:03</p>
-
-                    <label class="control-label" for="uniClosed">Unipedal Eyes Closed:</label>
-                      <p class="form-control-static"; style="color:limegreen">7:01</p>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="row">
+                    <div class="col-sm-5">
+                    {{ div1 | safe }}
                     </div>
+
+                    <div class="col-sm-5">
+                    {{ div2 | safe }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-5">
+                    {{ div4 | safe }}
+                    </div>
+
+                    <div class="col-sm-5">
+                    {{ div5 | safe }}
+                    </div>
+                </div>
+            </div>
+
+        <div class="col-sm-6">
+            {{ div3 | safe }}
+        </div>
+
+        </div>
     </div>
 
-</div>
+<div class="col-sm-3"> <strong>Query status:</strong> {{ queryStatus }}</div>
 
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.5.min.js"></script>
+{{ script1 | safe }}
+{{ script2 | safe }}
+{{ script3 | safe }}
+{{ script4 | safe }}
+{{ script5 | safe }}
 {% endblock %}
 
-<div class="col-sm-4"><div class="btn-group-vertical">
-                    <button type="button" class="btn btn-info">Print</button>
-                    <button type="button" class="btn btn-info">Back</button>
-                    <button type="button" class="btn btn-info">End</button>
-                </div></div>
+
