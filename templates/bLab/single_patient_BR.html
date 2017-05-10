@@ -27,10 +27,10 @@
                 <div class="col-sm-3"> <strong>Phone:</strong> {{ sd.phone }}</div>
             </div>
             <div class="row">
-                <div class="col-sm-3"> <strong>Time of Bipedal Eyes Opened:</strong> {{ sd.BEOSPEEDAP }}</div>
-                <div class="col-sm-3"> <strong>Time of Bipedal Eyes Closed:</strong> {{ sd.BECSPEEDAP }}</div>
-                <div class="col-sm-3"> <strong>Time of Unipedal Eyes Opened:</strong> {{ sd.UEOSPEEDAP }}</div>
-                <div class="col-sm-3"> <strong>Time of Unipedal Eyes Closed:</strong> {{ sd.UECSPEEDAP }}</div>
+                <div class="col-sm-3"> <strong>Time of Bipedal Eyes Opened:</strong> {{ sd.BEOTime }}</div>
+                <div class="col-sm-3"> <strong>Time of Bipedal Eyes Closed:</strong> {{ sd.BECTime }}</div>
+                <div class="col-sm-3"> <strong>Time of Unipedal Eyes Opened:</strong> {{ sd.UEOTime }}</div>
+                <div class="col-sm-3"> <strong>Time of Unipedal Eyes Closed:</strong> {{ sd.UECTime }}</div>
             </div><br>
         </div>
     </div>
@@ -59,36 +59,40 @@
     <div class="container">
 
         <div class="row">
-            <div class="col-sm-6">
+            <div class="col-sm-8">
                 <div class="row">
-                    <div class="col-sm-5">
+                    <div class="col-sm-3">
                     {{ div1 | safe }}
                     </div>
 
-                    <div class="col-sm-5">
+                    <div class="col-sm-3">
                     {{ div2 | safe }}
+                    </div>
+
+                    <div class="col-sm-3">
+                    {{ div3 | safe }}
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-sm-5">
+                    <div class="col-sm-3">
                     {{ div4 | safe }}
                     </div>
 
-                    <div class="col-sm-5">
+                    <div class="col-sm-3">
                     {{ div5 | safe }}
                     </div>
                 </div>
             </div>
 
-        <div class="col-sm-6">
-            {{ div3 | safe }}
+        <div class="col-sm-3">
+            {{ div6 | safe }}
         </div>
 
         </div>
     </div>
-
-<div class="col-sm-3"> <strong>Query status:</strong> {{ queryStatus }}</div>
+    <br>
+    <div class="col-sm-3"><strong>Query status: </strong>{{ queryStatus }}</div>
 
 <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.5.min.js"></script>
 {{ script1 | safe }}
@@ -96,6 +100,7 @@
 {{ script3 | safe }}
 {{ script4 | safe }}
 {{ script5 | safe }}
+{{ script6 | safe }}
 {% endblock %}
 
 

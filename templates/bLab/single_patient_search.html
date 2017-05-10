@@ -41,21 +41,21 @@
         <div class="col-sm-6"><h3><p style="color:red">Single Patient Search</p></h3>
         <br>
         <br>
-        <h4>First Name:</h4><input type="text" id="fNameVal" value="1st Name" maxlength="90" style="width:250px;">
-        <h4>Last Name:</h4><input type="text" id="lNameVal" value="Last Name" maxlength="90" style="width:250px;">
+        <h4>First Name:</h4><input type="text" id="fNameVal" value="Alessander" maxlength="90" style="width:250px;">
+        <h4>Last Name:</h4><input type="text" id="lNameVal" value="" maxlength="90" style="width:250px;">
 
         </div>
         <div class="col-sm-6"><h3>Parameters for Comparison (Ctrls)</h3>
         <br>
-        <h4>Gender:</h4><input type="text" id="genderVal" value="gender" maxlength="90" style="width:150px;">
+        <h4>Gender:</h4><input type="text" id="genderVal" value="" maxlength="90" style="width:150px;">
         <br>
          <h4>Age:</h4><input type="number" id="age1Val" min="0" max="110" value="12" maxlength="90" style="width:150px;"><h4>to</h4><input type="number" id="age2Val" min="0" max="110" value="" maxlength="90" style="width:150px;">
         <br>
-        <h4>Keywords:</h4><input type="text" id="key1Val" value="search word1" maxlength="90" style="width:150px;">
-        <br><input type="text" id="key2Val" value="search word2" maxlength="90" style="width:150px;">
-        <br><input type="text" id="key3Val" value="search word3" maxlength="90" style="width:150px;">
-        <br><input type="text" id="key4Val" value="search word4" maxlength="90" style="width:150px;">
-        <br><input type="text" id="key5Val" value="search word5" maxlength="90" style="width:150px;">
+        <h4>Keywords:</h4><input type="text" id="key1Val" value="" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key2Val" value="" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key3Val" value="" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key4Val" value="" maxlength="90" style="width:150px;">
+        <br><input type="text" id="key5Val" value="" maxlength="90" style="width:150px;">
         <br><br>
 
         <p><p style="text-align: center;"><button onclick="runSingleQuery()" class="btn btn-info" style="height:50px; width:100px">Run</button>
@@ -66,8 +66,14 @@
         <br>
         </div>
     </div>
-
-    </div>
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <p {% if message.tags %} class="{{ message.tags }}"{% endif %} style="text-align:center" >{{ message }}</p>
+                {% endfor %}
+            </ul>
+        {% endif %}
+</div>
 
 
 {% endblock %}
