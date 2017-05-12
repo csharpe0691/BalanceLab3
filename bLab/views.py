@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.messages import constants as Cmessages
+#from django.contrib.messages import constants
 
 import os
 import scipy.io
@@ -15,8 +17,9 @@ import numpy as np
 from bokeh.plotting import figure
 from bokeh.embed import components
 
-
+import pymongo
 from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
 
 '''class LineChart1(Chart):
     chart_type ='bubble'
@@ -129,6 +132,18 @@ class groups_response_table(tables.Table):
 
 @login_required(login_url="login/")
 def home(request):
+    global client, db, col
+    client = MongoClient('mongodb://blqwuser:balanceLabWQ@gbbmongo.business.umt.edu')
+    try:
+        client.admin.command('ismaster')
+    except:
+        print("Could not connect to server")
+        messages.error(request, 'CANNOT CONNECT TO DATABASE!')
+        return render(request, "home.html")
+
+    db = client.BalanceLab
+    col = db.test_collection
+    messages.success(request, 'Connected to database')
     return render(request,"home.html")
 
 @login_required()
@@ -426,9 +441,9 @@ def handle_uploaded_file(file, filename):
             destination.write(chunk)
 
     #setup mongoDB connection
-    client = MongoClient('mongodb://blqwuser:balanceLabWQ@gbbmongo.business.umt.edu')
-    db = client.BalanceLab
-    col = db.test_collection
+    #client = MongoClient('mongodb://blqwuser:balanceLabWQ@gbbmongo.business.umt.edu')
+    #db = client.BalanceLab
+    #col = db.test_collection
 
      #read .mat file contents into a dictionary
     rec = loadFile('upload/' + filename)
@@ -442,9 +457,9 @@ def upload(request):
         result = handle_uploaded_file(request.FILES['file'], str(request.FILES['file']))
 
     if result == True:
-        messages.info(request, 'Insert succeeded')
+        messages.success(request, 'Insert succeeded')
     else:
-        messages.info(request, 'Insert failed')
+        messages.error(request, 'Insert failed')
     return render(request,'upload_page.html')
 
 
@@ -499,12 +514,21 @@ def create_dummy_table_data():
         {'row_name':'CrossEnt',   'BEO_pt':0.0,'BEO_ctrls':0.0,'BEO_Pcnt':0.0,'BEC_pt':0.0,'BEC_ctrls':0.0,'BEC_Pcnt':0.0,'UEO_pt':0.0,'UEO_ctrls':0.0,'UEO_Pcnt':0.0,'UEC_pt':0.0,'UEC_ctrls':0.0,'UEC_Pcnt':0.0,'BND_pt':0.0,'BND_ctrls':0.0,'BND_Pcnt':0.0},
     ]
 
+
+def deleteDB(request):
+    #run pymongo single query
+    #client = MongoClient('mongodb://blquser:balanceLabQ@gbbmongo.business.umt.edu')
+    #db = client.BalanceLab
+    #col = db.test_collection
+
+    db.test_collection.remove({})
+    return render(request, '/')
+
+
 def single_query(request, first_name, last_name, gender, age1, age2, search_word_1, search_word_2, search_word_3, search_word_4, search_word_5):
 
     print(request)
     print(first_name, last_name, gender, age1, age2, search_word_1, search_word_2, search_word_3, search_word_4, search_word_5)
-    #build pymongo query
-
 
     # build pymongo query
     selectionCriteria = '{'
@@ -523,10 +547,6 @@ def single_query(request, first_name, last_name, gender, age1, age2, search_word
 
 
     selectionCriteria2 ='{'
-    #if first_name !='':
-        #selectionCriteria2 += "'first_name': " +'"' + str(first_name) +'"' +','
-    #if last_name !='':
-        #selectionCriteria2 += "'last_name': " +'"' + str(last_name) +'"' +','
     if gender !='':
         selectionCriteria2 += "'gender': " +'"' + str(gender) +'"' +','
     if age1 !='' and age2 !='':
@@ -550,21 +570,13 @@ def single_query(request, first_name, last_name, gender, age1, age2, search_word
     else:
         selectionCriteria2 +='}'
 
-
     selectionCriteriaDict2 = ast.literal_eval(selectionCriteria2)
-
-
     print("selectionCriteria2:", selectionCriteriaDict2)
 
     #run pymongo single query
-    client = MongoClient('mongodb://blquser:balanceLabQ@gbbmongo.business.umt.edu')
-    db = client.BalanceLab
-    col = db.test_collection
-    #{'first_name':'1st Name','last_name':'Last Name','gender':'gender','age': {'$gte': 12},'search_word_1':'search_word1','search_word_3':'search_word3'}
-
-
-
-
+    #client = MongoClient('mongodb://blquser:balanceLabQ@gbbmongo.business.umt.edu')
+    #db = client.BalanceLab
+    #col = db.test_collection
 
     doc = col.find_one(selectionCriteriaDict, {"_id": 0, "header": 0, "Platform": 0, "Created on": 0})
     if doc == None:
@@ -594,37 +606,13 @@ def single_query(request, first_name, last_name, gender, age1, age2, search_word
     print(type(doc))
     print(doc)
 
-    #finalQueryDict2 = col.find(selectionCriteriaDict2, {"_id": 0, "header": 0, "Platform": 0, "Created on": 0})
-    #finalQueryList2 = list(finalQueryDict2)
-    #finalQueryDf2 = pd.DataFrame(finalQueryList2)
-    #----------------------------------
-    '''
-    #finalQueryDict1 = col.find_one(selectionCriteriaDict, {"_id": 0, "header": 0, "Platform": 0, "Created on": 0})
-    finalQueryDict1 = col.find(selectionCriteriaDict, {"_id": 0, "header": 0, "Platform": 0, "Created on": 0}).limit(1)
-    finalQueryList1 = list(finalQueryDict1)
-    finalQueryDf1 = pd.DataFrame(finalQueryList1)
-    
-    data = {'first_name':'first_name',
-            'last_name':'last_name',
-            'gender':'gender',
-            'age':12,
-            'address':'address',
-            'city':'city',
-            'state':'state',
-            'BEOTime':6,
-            'BECTime':16,
-            'UEOTime':7,
-            'UECTime':17,
-            'phone':'phone'
-            }
-    '''
 
     finalQueryDict1 = col.find(selectionCriteriaDict, {"_id": 0, "header": 0, "Platform": 0, "Created on": 0}).limit(2)
 
     if finalQueryDict1.count() == 0:
         print('no matches')
         queryStatus = 'no matched patient'
-        messages.info(request, 'no matched patient')
+        messages.error(request, 'no matched patient')
         return render(request, 'bLab/single_patient_search.html')
 
     elif finalQueryDict1.count() > 1:
@@ -634,7 +622,7 @@ def single_query(request, first_name, last_name, gender, age1, age2, search_word
     else:
         #exactly one match
         print(type(finalQueryDict1))
-        finalQueryDf1 = pd.DataFrame.from_records(finalQueryDict1).round(2)
+        finalQueryDf1 = pd.DataFrame.from_records(finalQueryDict1).round(4)
         print(finalQueryDf1)
         query1SingleRow = finalQueryDf1.loc[0]
         print(query1SingleRow)
@@ -646,36 +634,36 @@ def single_query(request, first_name, last_name, gender, age1, age2, search_word
         finalQueryDict2 = col.find(selectionCriteriaDict2, {"_id": 0, "header": 0, "Platform": 0, "Created on": 0})
 
         if (finalQueryDict2.count() == 0):
-            messages.info(request, 'no matches for group search')
+            messages.error(request, 'no matches for group search')
             return render(request, 'bLab/single_patient_search.html')
         else:
             #matched at least one record
             finalQueryList2 = list(finalQueryDict2)
 
             finalQueryDF2raw = pd.DataFrame(finalQueryList2)
-            finalQueryDf2 = finalQueryDF2raw.round(2)
+            finalQueryDf2 = finalQueryDF2raw.round(4)
 
 
 
 
             #put values into table
             table_data = [
-                {'row_name': 'Area', 'BEO_pt': query1SingleRow['BEOAREA'], 'BEO_ctrls': round(finalQueryDf2['BEOAREA'].mean(),2), 'BEO_Pcnt': round(query1SingleRow['BEOAREA']/finalQueryDf2['BEOAREA'].mean(),2), 'BEC_pt': query1SingleRow['BECAREA'], 'BEC_ctrls': round(finalQueryDf2['BECAREA'].mean(),2), 'BEC_Pcnt': round(query1SingleRow['BECAREA']/finalQueryDf2['BECAREA'].mean(),2), 'UEO_pt': query1SingleRow['UEOAREA'], 'UEO_ctrls': round(finalQueryDf2['UEOAREA'].mean(),2), 'UEO_Pcnt': round(query1SingleRow['UEOAREA']/finalQueryDf2['UEOAREA'].mean(),2), 'UEC_pt': query1SingleRow['UECAREA'], 'UEC_ctrls': round(finalQueryDf2['UECAREA'].mean(),2), 'UEC_Pcnt': round(query1SingleRow['UECAREA']/finalQueryDf2['UECAREA'].mean(),2), 'BND_pt': query1SingleRow['BNDAREA'], 'BND_ctrls': round(finalQueryDf2['BNDAREA'].mean(),2), 'BND_Pcnt': round(query1SingleRow['BNDAREA']/finalQueryDf2['BNDAREA'].mean(),2)},
-                {'row_name': 'Range AP', 'BEO_pt': query1SingleRow['BEORANGEAP'], 'BEO_ctrls': round(finalQueryDf2['BEORANGEAP'].mean(),2), 'BEO_Pcnt': round(query1SingleRow['BEORANGEAP']/finalQueryDf2['BEORANGEAP'].mean(),2), 'BEC_pt': query1SingleRow['BECRANGEAP'], 'BEC_ctrls': round(finalQueryDf2['BECRANGEAP'].mean(),2), 'BEC_Pcnt': round(query1SingleRow['BECRANGEAP']/finalQueryDf2['BECRANGEAP'].mean(),2), 'UEO_pt': query1SingleRow['UEORANGEAP'], 'UEO_ctrls': round(finalQueryDf2['UEORANGEAP'].mean(),2), 'UEO_Pcnt': round(query1SingleRow['UEORANGEAP']/finalQueryDf2['UEORANGEAP'].mean(),2), 'UEC_pt': query1SingleRow['UECRANGEAP'], 'UEC_ctrls': round(finalQueryDf2['UECRANGEAP'].mean(),2), 'UEC_Pcnt': round(query1SingleRow['UECRANGEAP']/finalQueryDf2['UECRANGEAP'].mean(),2), 'BND_pt': query1SingleRow['BNDRANGEAP'], 'BND_ctrls': round(finalQueryDf2['BNDRANGEAP'].mean(),2), 'BND_Pcnt': round(query1SingleRow['BNDRANGEAP']/finalQueryDf2['BNDRANGEAP'].mean(),2)},
-                {'row_name': 'Range ML', 'BEO_pt': query1SingleRow['BEORANGEML'], 'BEO_ctrls': round(finalQueryDf2['BEORANGEML'].mean(),2), 'BEO_Pcnt': round(query1SingleRow['BEORANGEML']/finalQueryDf2['BEORANGEML'].mean(),2), 'BEC_pt': query1SingleRow['BECRANGEML'], 'BEC_ctrls': round(finalQueryDf2['BEORANGEML'].mean(),2), 'BEC_Pcnt': round(query1SingleRow['BECRANGEML']/finalQueryDf2['BEORANGEML'].mean(),2), 'UEO_pt': query1SingleRow['UEORANGEML'], 'UEO_ctrls': round(finalQueryDf2['UEORANGEML'].mean(),2), 'UEO_Pcnt': round(query1SingleRow['UEORANGEML']/finalQueryDf2['UEORANGEML'].mean(),2), 'UEC_pt': query1SingleRow['UECRANGEML'], 'UEC_ctrls': round(finalQueryDf2['UECRANGEML'].mean(),2), 'UEC_Pcnt': round(query1SingleRow['UECRANGEML']/finalQueryDf2['UECRANGEML'].mean(),2), 'BND_pt': query1SingleRow['BNDRANGEML'], 'BND_ctrls': round(finalQueryDf2['BNDRANGEML'].mean(),2), 'BND_Pcnt': round(query1SingleRow['BNDRANGEML']/finalQueryDf2['BNDRANGEML'].mean(),2)},
+                {'row_name': 'Area', 'BEO_pt': query1SingleRow['BEOAREA'], 'BEO_ctrls': round(finalQueryDf2['BEOAREA'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEOAREA']/finalQueryDf2['BEOAREA'].mean(),4), 'BEC_pt': query1SingleRow['BECAREA'], 'BEC_ctrls': round(finalQueryDf2['BECAREA'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECAREA']/finalQueryDf2['BECAREA'].mean(),4), 'UEO_pt': query1SingleRow['UEOAREA'], 'UEO_ctrls': round(finalQueryDf2['UEOAREA'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEOAREA']/finalQueryDf2['UEOAREA'].mean(),4), 'UEC_pt': query1SingleRow['UECAREA'], 'UEC_ctrls': round(finalQueryDf2['UECAREA'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECAREA']/finalQueryDf2['UECAREA'].mean(),4), 'BND_pt': query1SingleRow['BNDAREA'], 'BND_ctrls': round(finalQueryDf2['BNDAREA'].mean(),4), 'BND_Pcnt': round(query1SingleRow['BNDAREA']/finalQueryDf2['BNDAREA'].mean(),4)},
+                {'row_name': 'Range AP', 'BEO_pt': query1SingleRow['BEORANGEAP'], 'BEO_ctrls': round(finalQueryDf2['BEORANGEAP'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEORANGEAP']/finalQueryDf2['BEORANGEAP'].mean(),4), 'BEC_pt': query1SingleRow['BECRANGEAP'], 'BEC_ctrls': round(finalQueryDf2['BECRANGEAP'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECRANGEAP']/finalQueryDf2['BECRANGEAP'].mean(),4), 'UEO_pt': query1SingleRow['UEORANGEAP'], 'UEO_ctrls': round(finalQueryDf2['UEORANGEAP'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEORANGEAP']/finalQueryDf2['UEORANGEAP'].mean(),4), 'UEC_pt': query1SingleRow['UECRANGEAP'], 'UEC_ctrls': round(finalQueryDf2['UECRANGEAP'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECRANGEAP']/finalQueryDf2['UECRANGEAP'].mean(),4), 'BND_pt': query1SingleRow['BNDRANGEAP'], 'BND_ctrls': round(finalQueryDf2['BNDRANGEAP'].mean(),4), 'BND_Pcnt': round(query1SingleRow['BNDRANGEAP']/finalQueryDf2['BNDRANGEAP'].mean(),4)},
+                {'row_name': 'Range ML', 'BEO_pt': query1SingleRow['BEORANGEML'], 'BEO_ctrls': round(finalQueryDf2['BEORANGEML'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEORANGEML']/finalQueryDf2['BEORANGEML'].mean(),4), 'BEC_pt': query1SingleRow['BECRANGEML'], 'BEC_ctrls': round(finalQueryDf2['BEORANGEML'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECRANGEML']/finalQueryDf2['BEORANGEML'].mean(),4), 'UEO_pt': query1SingleRow['UEORANGEML'], 'UEO_ctrls': round(finalQueryDf2['UEORANGEML'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEORANGEML']/finalQueryDf2['UEORANGEML'].mean(),4), 'UEC_pt': query1SingleRow['UECRANGEML'], 'UEC_ctrls': round(finalQueryDf2['UECRANGEML'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECRANGEML']/finalQueryDf2['UECRANGEML'].mean(),4), 'BND_pt': query1SingleRow['BNDRANGEML'], 'BND_ctrls': round(finalQueryDf2['BNDRANGEML'].mean(),4), 'BND_Pcnt': round(query1SingleRow['BNDRANGEML']/finalQueryDf2['BNDRANGEML'].mean(),4)},
 
-                {'row_name': 'MV AP', 'BEO_pt': 0.0, 'BEO_ctrls': 0.0, 'BEO_Pcnt': 0.0, 'BEC_pt': 0.0, 'BEC_ctrls': 0.0, 'BEC_Pcnt': 0.0, 'UEO_pt': 0.0, 'UEO_ctrls': 0.0, 'UEO_Pcnt': 0.0, 'UEC_pt': 0.0, 'UEC_ctrls': 0.0, 'UEC_Pcnt': 0.0, 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
-                {'row_name': 'MV ML', 'BEO_pt': 0.0, 'BEO_ctrls': 0.0, 'BEO_Pcnt': 0.0, 'BEC_pt': 0.0, 'BEC_ctrls': 0.0, 'BEC_Pcnt': 0.0, 'UEO_pt': 0.0, 'UEO_ctrls': 0.0, 'UEO_Pcnt': 0.0, 'UEC_pt': 0.0, 'UEC_ctrls': 0.0, 'UEC_Pcnt': 0.0, 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
+                {'row_name': 'MV AP', 'BEO_pt': query1SingleRow['BEOSPEEDAP'], 'BEO_ctrls': round(finalQueryDf2['BEOSPEEDAP'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEOSPEEDAP']/finalQueryDf2['BEOSPEEDAP'].mean(),4), 'BEC_pt': query1SingleRow['BECSPEEDAP'], 'BEC_ctrls': round(finalQueryDf2['BECSPEEDAP'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECSPEEDAP']/finalQueryDf2['BECSPEEDAP'].mean(),4), 'UEO_pt': query1SingleRow['UEOSPEEDAP'], 'UEO_ctrls': round(finalQueryDf2['UEOSPEEDAP'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEOSPEEDAP']/finalQueryDf2['UEOSPEEDAP'].mean(),4), 'UEC_pt': query1SingleRow['UECSPEEDAP'], 'UEC_ctrls': round(finalQueryDf2['UECSPEEDAP'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECSPEEDAP']/finalQueryDf2['UECSPEEDAP'].mean(),4), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
+                {'row_name': 'MV ML', 'BEO_pt': query1SingleRow['BEOSPEEDML'], 'BEO_ctrls': round(finalQueryDf2['BEOSPEEDML'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEOSPEEDML']/finalQueryDf2['BEOSPEEDML'].mean(),4), 'BEC_pt': query1SingleRow['BECSPEEDML'], 'BEC_ctrls': round(finalQueryDf2['BECSPEEDML'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECSPEEDML']/finalQueryDf2['BECSPEEDML'].mean(),4), 'UEO_pt': query1SingleRow['UEOSPEEDML'], 'UEO_ctrls': round(finalQueryDf2['UEOSPEEDML'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEOSPEEDML']/finalQueryDf2['UEOSPEEDML'].mean(),4), 'UEC_pt': query1SingleRow['UECSPEEDML'], 'UEC_ctrls': round(finalQueryDf2['UECSPEEDML'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECSPEEDML']/finalQueryDf2['UECSPEEDML'].mean(),4), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
 
-                {'row_name': 'RMS AP', 'BEO_pt': query1SingleRow['BEORMSAP'], 'BEO_ctrls': round(finalQueryDf2['BEORMSAP'].mean(),2), 'BEO_Pcnt': round(query1SingleRow['BEORMSAP']/finalQueryDf2['BEORMSAP'].mean(),2), 'BEC_pt': query1SingleRow['BECRMSAP'], 'BEC_ctrls': round(finalQueryDf2['BECRMSAP'].mean(),2), 'BEC_Pcnt': round(query1SingleRow['BECRMSAP']/finalQueryDf2['BECRMSAP'].mean(),2), 'UEO_pt': query1SingleRow['UEORMSAP'], 'UEO_ctrls': round(finalQueryDf2['UEORMSAP'].mean(),2), 'UEO_Pcnt': round(query1SingleRow['UEORMSAP']/finalQueryDf2['UEORMSAP'].mean(),2), 'UEC_pt': query1SingleRow['UECRMSAP'], 'UEC_ctrls': round(finalQueryDf2['UECRMSAP'].mean(),2), 'UEC_Pcnt': round(query1SingleRow['UECRMSAP']/finalQueryDf2['UECRMSAP'].mean(),2), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
-                {'row_name': 'RMS ML', 'BEO_pt': query1SingleRow['BEORMSML'], 'BEO_ctrls': round(finalQueryDf2['BEORMSML'].mean(),2), 'BEO_Pcnt': round(query1SingleRow['BEORMSML']/finalQueryDf2['BEORMSML'].mean(),2), 'BEC_pt': query1SingleRow['BECRMSML'], 'BEC_ctrls': round(finalQueryDf2['BECRMSML'].mean(),2), 'BEC_Pcnt': round(query1SingleRow['BECRMSML']/finalQueryDf2['BECRMSML'].mean(),2), 'UEO_pt': query1SingleRow['UEORMSML'], 'UEO_ctrls': round(finalQueryDf2['UEORMSML'].mean(),2), 'UEO_Pcnt': round(query1SingleRow['UEORMSML']/finalQueryDf2['UEORMSML'].mean(),2), 'UEC_pt': query1SingleRow['UECRMSML'], 'UEC_ctrls': round(finalQueryDf2['UECRMSML'].mean(),2), 'UEC_Pcnt': round(query1SingleRow['UECRMSML']/finalQueryDf2['UECRMSML'].mean(),2), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
-                {'row_name': 'F80 AP (Hz)', 'BEO_pt': query1SingleRow['BEOF80AP'], 'BEO_ctrls': round(finalQueryDf2['BEOF80AP'].mean(),2), 'BEO_Pcnt': round(query1SingleRow['BEOF80AP']/finalQueryDf2['BEOF80AP'].mean(),2), 'BEC_pt': query1SingleRow['BECF80AP'], 'BEC_ctrls': round(finalQueryDf2['BECF80AP'].mean(),2), 'BEC_Pcnt': round(query1SingleRow['BECF80AP']/finalQueryDf2['BECF80AP'].mean(),2), 'UEO_pt': query1SingleRow['UEOF80AP'], 'UEO_ctrls': round(finalQueryDf2['UEOF80AP'].mean(),2), 'UEO_Pcnt': round(query1SingleRow['UEOF80AP']/finalQueryDf2['UEOF80AP'].mean(),2), 'UEC_pt': query1SingleRow['UECF80AP'], 'UEC_ctrls': round(finalQueryDf2['UECF80AP'].mean(),2), 'UEC_Pcnt': round(query1SingleRow['UECF80AP']/finalQueryDf2['UECF80AP'].mean(),2), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
+                {'row_name': 'RMS AP', 'BEO_pt': query1SingleRow['BEORMSAP'], 'BEO_ctrls': round(finalQueryDf2['BEORMSAP'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEORMSAP']/finalQueryDf2['BEORMSAP'].mean(),4), 'BEC_pt': query1SingleRow['BECRMSAP'], 'BEC_ctrls': round(finalQueryDf2['BECRMSAP'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECRMSAP']/finalQueryDf2['BECRMSAP'].mean(),4), 'UEO_pt': query1SingleRow['UEORMSAP'], 'UEO_ctrls': round(finalQueryDf2['UEORMSAP'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEORMSAP']/finalQueryDf2['UEORMSAP'].mean(),4), 'UEC_pt': query1SingleRow['UECRMSAP'], 'UEC_ctrls': round(finalQueryDf2['UECRMSAP'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECRMSAP']/finalQueryDf2['UECRMSAP'].mean(),4), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
+                {'row_name': 'RMS ML', 'BEO_pt': query1SingleRow['BEORMSML'], 'BEO_ctrls': round(finalQueryDf2['BEORMSML'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEORMSML']/finalQueryDf2['BEORMSML'].mean(),4), 'BEC_pt': query1SingleRow['BECRMSML'], 'BEC_ctrls': round(finalQueryDf2['BECRMSML'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECRMSML']/finalQueryDf2['BECRMSML'].mean(),4), 'UEO_pt': query1SingleRow['UEORMSML'], 'UEO_ctrls': round(finalQueryDf2['UEORMSML'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEORMSML']/finalQueryDf2['UEORMSML'].mean(),4), 'UEC_pt': query1SingleRow['UECRMSML'], 'UEC_ctrls': round(finalQueryDf2['UECRMSML'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECRMSML']/finalQueryDf2['UECRMSML'].mean(),4), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
+                {'row_name': 'F80 AP (Hz)', 'BEO_pt': query1SingleRow['BEOF80AP'], 'BEO_ctrls': round(finalQueryDf2['BEOF80AP'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEOF80AP']/finalQueryDf2['BEOF80AP'].mean(),4), 'BEC_pt': query1SingleRow['BECF80AP'], 'BEC_ctrls': round(finalQueryDf2['BECF80AP'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECF80AP']/finalQueryDf2['BECF80AP'].mean(),4), 'UEO_pt': query1SingleRow['UEOF80AP'], 'UEO_ctrls': round(finalQueryDf2['UEOF80AP'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEOF80AP']/finalQueryDf2['UEOF80AP'].mean(),4), 'UEC_pt': query1SingleRow['UECF80AP'], 'UEC_ctrls': round(finalQueryDf2['UECF80AP'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECF80AP']/finalQueryDf2['UECF80AP'].mean(),4), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
 
-                {'row_name': 'F80 ML (Hz)', 'BEO_pt': 0.0, 'BEO_ctrls': 0.0, 'BEO_Pcnt': 0.0, 'BEC_pt': 0.0, 'BEC_ctrls': 0.0, 'BEC_Pcnt': 0.0, 'UEO_pt': 0.0, 'UEO_ctrls': 0.0, 'UEO_Pcnt': 0.0, 'UEC_pt': 0.0, 'UEC_ctrls': 0.0, 'UEC_Pcnt': 0.0, 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
+                #{'row_name': 'F80 ML (Hz)', 'BEO_pt': 0.0, 'BEO_ctrls': 0.0, 'BEO_Pcnt': 0.0, 'BEC_pt': 0.0, 'BEC_ctrls': 0.0, 'BEC_Pcnt': 0.0, 'UEO_pt': 0.0, 'UEO_ctrls': 0.0, 'UEO_Pcnt': 0.0, 'UEC_pt': 0.0, 'UEC_ctrls': 0.0, 'UEC_Pcnt': 0.0, 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
 
-                {'row_name': 'Sent AP', 'BEO_pt': query1SingleRow['BEOSENTAP'], 'BEO_ctrls': round(finalQueryDf2['BEOSENTAP'].mean(),2), 'BEO_Pcnt': round(query1SingleRow['BEOSENTAP']/finalQueryDf2['BEOSENTAP'].mean(),2), 'BEC_pt': query1SingleRow['BECSENTAP'], 'BEC_ctrls': round(finalQueryDf2['BECSENTAP'].mean(),2), 'BEC_Pcnt': round(query1SingleRow['BECSENTAP']/finalQueryDf2['BECSENTAP'].mean(),2), 'UEO_pt': query1SingleRow['UEOSENTAP'], 'UEO_ctrls': round(finalQueryDf2['UEOSENTAP'].mean(),2), 'UEO_Pcnt': round(query1SingleRow['UEOSENTAP']/finalQueryDf2['UEOSENTAP'].mean(),2), 'UEC_pt': query1SingleRow['UECSENTAP'], 'UEC_ctrls': round(finalQueryDf2['UECSENTAP'].mean(),2), 'UEC_Pcnt': round(query1SingleRow['UECSENTAP']/finalQueryDf2['UECSENTAP'].mean(),2), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
-                {'row_name': 'Sent ML', 'BEO_pt': query1SingleRow['BEOSENTML'], 'BEO_ctrls': round(finalQueryDf2['BEOSENTML'].mean(),2), 'BEO_Pcnt': round(query1SingleRow['BEOSENTML']/finalQueryDf2['BEOSENTML'].mean(),2), 'BEC_pt': query1SingleRow['BECSENTML'], 'BEC_ctrls': round(finalQueryDf2['BECSENTML'].mean(),2), 'BEC_Pcnt': round(query1SingleRow['BECSENTML']/finalQueryDf2['BECSENTML'].mean(),2), 'UEO_pt': query1SingleRow['UEOSENTML'], 'UEO_ctrls': round(finalQueryDf2['UEOSENTML'].mean(),2), 'UEO_Pcnt': round(query1SingleRow['UEOSENTML']/finalQueryDf2['UEOSENTML'].mean(),2), 'UEC_pt': query1SingleRow['UECSENTML'], 'UEC_ctrls': round(finalQueryDf2['UECSENTML'].mean(),2), 'UEC_Pcnt': round(query1SingleRow['UECSENTML']/finalQueryDf2['UECSENTML'].mean(),2), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
-                {'row_name': 'CrossSent', 'BEO_pt': query1SingleRow['BEOCROSSSENT'], 'BEO_ctrls': round(finalQueryDf2['BEOCROSSSENT'].mean(),2), 'BEO_Pcnt': round(query1SingleRow['BEOCROSSSENT']/finalQueryDf2['BEOCROSSSENT'].mean(),2), 'BEC_pt': query1SingleRow['BECCROSSSENT'], 'BEC_ctrls': round(finalQueryDf2['BECCROSSSENT'].mean(),2), 'BEC_Pcnt': round(query1SingleRow['BECCROSSSENT']/finalQueryDf2['BECCROSSSENT'].mean(),2), 'UEO_pt': query1SingleRow['UEOCROSSSENT'], 'UEO_ctrls': round(finalQueryDf2['UEOCROSSSENT'].mean(),2), 'UEO_Pcnt': round(query1SingleRow['UEOCROSSSENT']/finalQueryDf2['UEOCROSSSENT'].mean(),2), 'UEC_pt': query1SingleRow['UECCROSSSENT'], 'UEC_ctrls': round(finalQueryDf2['UECCROSSSENT'].mean(),2), 'UEC_Pcnt': round(query1SingleRow['UECCROSSSENT']/finalQueryDf2['UECCROSSSENT'].mean(),2), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
+                {'row_name': 'Sent AP', 'BEO_pt': query1SingleRow['BEOSENTAP'], 'BEO_ctrls': round(finalQueryDf2['BEOSENTAP'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEOSENTAP']/finalQueryDf2['BEOSENTAP'].mean(),4), 'BEC_pt': query1SingleRow['BECSENTAP'], 'BEC_ctrls': round(finalQueryDf2['BECSENTAP'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECSENTAP']/finalQueryDf2['BECSENTAP'].mean(),4), 'UEO_pt': query1SingleRow['UEOSENTAP'], 'UEO_ctrls': round(finalQueryDf2['UEOSENTAP'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEOSENTAP']/finalQueryDf2['UEOSENTAP'].mean(),4), 'UEC_pt': query1SingleRow['UECSENTAP'], 'UEC_ctrls': round(finalQueryDf2['UECSENTAP'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECSENTAP']/finalQueryDf2['UECSENTAP'].mean(),4), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
+                {'row_name': 'Sent ML', 'BEO_pt': query1SingleRow['BEOSENTML'], 'BEO_ctrls': round(finalQueryDf2['BEOSENTML'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEOSENTML']/finalQueryDf2['BEOSENTML'].mean(),4), 'BEC_pt': query1SingleRow['BECSENTML'], 'BEC_ctrls': round(finalQueryDf2['BECSENTML'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECSENTML']/finalQueryDf2['BECSENTML'].mean(),4), 'UEO_pt': query1SingleRow['UEOSENTML'], 'UEO_ctrls': round(finalQueryDf2['UEOSENTML'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEOSENTML']/finalQueryDf2['UEOSENTML'].mean(),4), 'UEC_pt': query1SingleRow['UECSENTML'], 'UEC_ctrls': round(finalQueryDf2['UECSENTML'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECSENTML']/finalQueryDf2['UECSENTML'].mean(),4), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
+                {'row_name': 'CrossSent', 'BEO_pt': query1SingleRow['BEOCROSSSENT'], 'BEO_ctrls': round(finalQueryDf2['BEOCROSSSENT'].mean(),4), 'BEO_Pcnt': round(query1SingleRow['BEOCROSSSENT']/finalQueryDf2['BEOCROSSSENT'].mean(),4), 'BEC_pt': query1SingleRow['BECCROSSSENT'], 'BEC_ctrls': round(finalQueryDf2['BECCROSSSENT'].mean(),4), 'BEC_Pcnt': round(query1SingleRow['BECCROSSSENT']/finalQueryDf2['BECCROSSSENT'].mean(),4), 'UEO_pt': query1SingleRow['UEOCROSSSENT'], 'UEO_ctrls': round(finalQueryDf2['UEOCROSSSENT'].mean(),4), 'UEO_Pcnt': round(query1SingleRow['UEOCROSSSENT']/finalQueryDf2['UEOCROSSSENT'].mean(),4), 'UEC_pt': query1SingleRow['UECCROSSSENT'], 'UEC_ctrls': round(finalQueryDf2['UECCROSSSENT'].mean(),4), 'UEC_Pcnt': round(query1SingleRow['UECCROSSSENT']/finalQueryDf2['UECCROSSSENT'].mean(),4), 'BND_pt': '-', 'BND_ctrls': '-', 'BND_Pcnt': '-'},
             ]
 
 
@@ -727,87 +715,85 @@ def single_query(request, first_name, last_name, gender, age1, age2, search_word
 
     print(query1SingleRow['BEO_COPml_Profile'])
     #chart 1
-    x1 = query1SingleRow['BEO_COPml_Profile']
-    y1 = query1SingleRow['BEO_COPAP_PROFILE']
+    x1 = [item for sublist in query1SingleRow['BEO_COPml_Profile'] for item in sublist]
+    y1 = [item for sublist in query1SingleRow['BEO_COPAP_PROFILE'] for item in sublist]
     plot1 = figure(title='BEO',
-                  x_axis_label='X-Axis',
-                  y_axis_label='Y-Axis',
+                  x_axis_label=' ',
+                  y_axis_label=' ',
                   plot_width=200,
                   plot_height=200,
                    x_range=(-6, 6),
                    y_range=(-6, 6))
-    #plot1.line(x1, y1, line_width=2, line_color="LightSkyBlue")
-    plot1.multi_line([query1SingleRow['BEO_COPml_Profile']],
-                     [query1SingleRow['BEO_COPAP_PROFILE']],
-                 color=["LightSkyBlue"], line_width=2)
+    plot1.line(x1, y1, line_width=2, line_color="LightSkyBlue")
+    #plot1.multi_line([query1SingleRow['BEO_COPml_Profile']],
+                    #[query1SingleRow['BEO_COPAP_PROFILE']],
+                 #color=["LightSkyBlue"], line_width=2)
     plot1.toolbar_location = None
     script1, div1 = components(plot1)
 
     #chart 2
-    x2 = query1SingleRow['BEC_COPml_Profile']
-    y2 = query1SingleRow['BEC_COPAP_PROFILE']
+    x2 = [item for sublist in query1SingleRow['BEC_COPml_Profile'] for item in sublist]
+    y2 = [item for sublist in query1SingleRow['BEC_COPAP_PROFILE'] for item in sublist]
     plot2 = figure(title='BEC',
-                  x_axis_label='X-Axis',
-                  y_axis_label='Y-Axis',
+                   x_axis_label=' ',
+                   y_axis_label=' ',
                   plot_width=200,
                   plot_height=200,
                    x_range=(-6, 6),
                    y_range=(-6, 6))
-    #plot2.line(x2, y2, line_width=2, line_color="MidnightBlue")
-    plot2.multi_line([query1SingleRow['BEC_COPml_Profile']],
-                     [query1SingleRow['BEC_COPAP_PROFILE']],
-                 color=["MidnightBlue"], line_width=2)
+    plot2.line(x2, y2, line_width=2, line_color="MidnightBlue")
+    #plot2.multi_line([query1SingleRow['BEC_COPml_Profile']],
+                     #[query1SingleRow['BEC_COPAP_PROFILE']],
+                 #color=["MidnightBlue"], line_width=2)
     plot2.toolbar_location = None
     script2, div2 = components(plot2)
 
     # chart 3
-    x3 = query1SingleRow['BND_COPML_PROFILE']
-    y3 = query1SingleRow['BND_COPAP_Profile']
+    x3 = [item for sublist in query1SingleRow['BND_COPML_PROFILE'] for item in sublist]
+    y3 = [item for sublist in query1SingleRow['BND_COPAP_Profile'] for item in sublist]
     plot3 = figure(title='BND',
-                   x_axis_label='X-Axis',
-                   y_axis_label='Y-Axis',
+                   x_axis_label=' ',
+                   y_axis_label=' ',
                    plot_width=200,
-                   plot_height=200,
-                   x_range=(-6, 6),
-                   y_range=(-6, 6))
-    #plot3.line(x3, y3, line_width=2, line_color="black")
-    plot3.multi_line([query1SingleRow['BND_COPML_PROFILE']],
-                     [query1SingleRow['BND_COPAP_Profile']],
-                 color=["Black"], line_width=2)
+                   plot_height=200)
+    plot3.line(x3, y3, line_width=2, line_color="black")
+    #plot3.multi_line([query1SingleRow['BND_COPML_PROFILE']],
+    #                 [query1SingleRow['BND_COPAP_Profile']],
+    #             color=["Black"], line_width=2)
     plot3.toolbar_location = None
     script3, div3 = components(plot3)
 
     # chart 4
-    x4 = query1SingleRow['UEO_COPml_Profile']
-    y4 = query1SingleRow['UEO_COPAP_PROFILE']
+    x4 = [item for sublist in query1SingleRow['UEO_COPml_Profile'] for item in sublist]
+    y4 = [item for sublist in query1SingleRow['UEO_COPAP_PROFILE'] for item in sublist]
     plot4 = figure(title='UEO',
-                   x_axis_label='X-Axis',
-                   y_axis_label='Y-Axis',
+                   x_axis_label=' ',
+                   y_axis_label=' ',
                    plot_width=200,
                    plot_height=200,
                    x_range=(-6, 6),
                    y_range=(-6, 6))
-    #plot4.line(x4, y4, line_width=2, line_color="LightSalmon")
-    plot4.multi_line([query1SingleRow['UEO_COPml_Profile']],
-                     [query1SingleRow['UEO_COPAP_PROFILE']],
-                 color=["DarkOrange"], line_width=2)
+    plot4.line(x4, y4, line_width=2, line_color="LightSalmon")
+    #plot4.multi_line([query1SingleRow['UEO_COPml_Profile']],
+                     #[query1SingleRow['UEO_COPAP_PROFILE']],
+                 #color=["DarkOrange"], line_width=2)
     plot4.toolbar_location = None
     script4, div4 = components(plot4)
 
     # chart 5
-    x5 = query1SingleRow['UEC_COPml_Profile']
-    y5 = query1SingleRow['UEC_COPAP_PROFILE']
+    x5 = [item for sublist in query1SingleRow['UEC_COPml_Profile'] for item in sublist]
+    y5 = [item for sublist in query1SingleRow['UEC_COPAP_PROFILE'] for item in sublist]
     plot5 = figure(title='UEC',
-                   x_axis_label='X-Axis',
-                   y_axis_label='Y-Axis',
+                   x_axis_label=' ',
+                   y_axis_label=' ',
                    plot_width=200,
                    plot_height=200,
                    x_range=(-6, 6),
                    y_range=(-6, 6))
-    #plot5.line(x5, y5, line_width=2, color="DarkOrange")
-    plot5.multi_line([query1SingleRow['UEC_COPml_Profile']],
-                     [query1SingleRow['UEC_COPAP_PROFILE']],
-                 color=["DarkOrange"], line_width=2)
+    plot5.line(x5, y5, line_width=2, color="DarkOrange")
+    #plot5.multi_line([query1SingleRow['UEC_COPml_Profile']],
+                     #[query1SingleRow['UEC_COPAP_PROFILE']],
+                 #color=["DarkOrange"], line_width=2)
     plot5.toolbar_location = None
     script5, div5 = components(plot5)
 
@@ -815,8 +801,8 @@ def single_query(request, first_name, last_name, gender, age1, age2, search_word
     dummyBigData = [[1, 3, 2], [3, 4, 6, 6]], [[2, 1, 4], [4, 7, 8, 5]]
     # chart 6
     plot6 = figure(title='COP Areas',
-                   x_axis_label='X-Axis',
-                   y_axis_label='Y-Axis',
+                   x_axis_label='COP ML',
+                   y_axis_label='COP ML',
                    plot_width=400,
                    plot_height=400,
                    x_range=(-6, 6),
@@ -965,15 +951,15 @@ def groups_query(request, genderG1, age1G1, age2G1, key1G1, key2G1, key3G1, key4
     print("selectionCriteriaG3:", selectionCriteriaDictG3)
 
     #run pymongo single query
-    client = MongoClient('mongodb://blquser:balanceLabQ@gbbmongo.business.umt.edu')
-    db = client.BalanceLab
-    col = db.test_collection
+    #client = MongoClient('mongodb://blquser:balanceLabQ@gbbmongo.business.umt.edu')
+    #db = client.BalanceLab
+    #col = db.test_collection
 
     finalQueryDictG1 = col.find(selectionCriteriaDictG1, {"_id": 0, "header": 0, "Platform": 0, "Created on": 0})
 
     if (finalQueryDictG1.count() == 0):
         table_data = create_dummy_table_dataG()
-        messages.info(request, 'no matched groups')
+        messages.error(request, 'no matched groups')
         return render(request, 'bLab/group_compar.html')
     else:
         # matched at least one record
@@ -990,18 +976,18 @@ def groups_query(request, genderG1, age1G1, age2G1, key1G1, key2G1, key3G1, key4
     finalQueryDfG3 = pd.DataFrame(finalQueryListG3)
 
     table_dataG = [
-        {'row_name': 'Area',        'BEO_G1': round(finalQueryDfG1['BEOAREA'].mean(),2), 'BEO_G2': round(finalQueryDfG2['BEOAREA'].mean(),2), 'BEO_G3': round(finalQueryDfG3['BEOAREA'].mean(),2), 'BEC_G1': round(finalQueryDfG1['BECAREA'].mean(),2), 'BEC_G2': round(finalQueryDfG2['BECAREA'].mean(),2), 'BEC_G3': round(finalQueryDfG3['BECAREA'].mean(),2), 'UEO_G1': round(finalQueryDfG1['UEOAREA'].mean(),2), 'UEO_G2': round(finalQueryDfG2['UEOAREA'].mean(),2),                                         'UEO_G3': round(finalQueryDfG3['UEOAREA'].mean(),2), 'UEC_G1': round(finalQueryDfG1['UECAREA'].mean(),2),                     'UEC_G2': round(finalQueryDfG2['UECAREA'].mean(),2), 'UEC_G3': round(finalQueryDfG3['UECAREA'].mean(),2), 'BND_G1': round(finalQueryDfG1['BNDAREA'].mean(),2), 'BND_G2': round(finalQueryDfG2['BNDAREA'].mean(),2), 'BND_G3': round(finalQueryDfG3['BNDAREA'].mean(),2)},
-        {'row_name': 'Range AP',    'BEO_G1': round(finalQueryDfG1['BEORANGEAP'].mean(),2), 'BEO_G2': round(finalQueryDfG2['BEORANGEAP'].mean(),2), 'BEO_G3': round(finalQueryDfG3['BEORANGEAP'].mean(),2), 'BEC_G1': round(finalQueryDfG1['BECRANGEAP'].mean(),2), 'BEC_G2': round(finalQueryDfG2['BECRANGEAP'].mean(),2), 'BEC_G3': round(finalQueryDfG3['BECRANGEAP'].mean(),2), 'UEO_G1': round(finalQueryDfG1['UEORANGEAP'].mean(),2), 'UEO_G2': round(finalQueryDfG2['UEORANGEAP'].mean(),2),                 'UEO_G3': round(finalQueryDfG3['UEORANGEAP'].mean(),2), 'UEC_G1': round(finalQueryDfG1['UECRANGEAP'].mean(),2),               'UEC_G2': round(finalQueryDfG2['UECRANGEAP'].mean(),2), 'UEC_G3': round(finalQueryDfG3['UECRANGEAP'].mean(),2), 'BND_G1': round(finalQueryDfG1['BNDRANGEAP'].mean(),2), 'BND_G2': round(finalQueryDfG2['BNDRANGEAP'].mean(),2), 'BND_G3': round(finalQueryDfG3['BNDRANGEAP'].mean(),2)},
-        {'row_name': 'Range ML',    'BEO_G1': round(finalQueryDfG1['BEORANGEML'].mean(),2), 'BEO_G2': round(finalQueryDfG2['BEORANGEML'].mean(),2), 'BEO_G3': round(finalQueryDfG3['BEORANGEML'].mean(),2), 'BEC_G1': round(finalQueryDfG1['BECRANGEML'].mean(),2), 'BEC_G2': round(finalQueryDfG2['BECRANGEML'].mean(),2), 'BEC_G3': round(finalQueryDfG3['BECRANGEML'].mean(),2), 'UEO_G1': round(finalQueryDfG1['UEORANGEML'].mean(),2), 'UEO_G2': round(finalQueryDfG2['UEORANGEML'].mean(),2),                 'UEO_G3': round(finalQueryDfG3['UEORANGEML'].mean(),2), 'UEC_G1': round(finalQueryDfG1['UECRANGEML'].mean(),2),               'UEC_G2': round(finalQueryDfG2['UECRANGEML'].mean(),2), 'UEC_G3': round(finalQueryDfG3['UECRANGEML'].mean(),2), 'BND_G1': round(finalQueryDfG1['BNDRANGEML'].mean(),2), 'BND_G2': round(finalQueryDfG2['BNDRANGEML'].mean(),2), 'BND_G3': round(finalQueryDfG3['BNDRANGEML'].mean(),2)},
-        #{'row_name': 'MV AP',       'BEO_G1': 0.0, 'BEO_G2': 0.0, 'BEO_G3': 0.0, 'BEC_G1': 0.0, 'BEC_G2': 0.0, 'BEC_G3': 0.0, 'UEO_G1': 0.0, 'UEO_G2': 0.0, 'UEO_G3': 0.0, 'UEC_G1': 0.0, 'UEC_G2': 0.0, 'UEC_G3': 0.0, 'BND_G1': 0.0, 'BND_G2': 0.0, 'BND_G3': 0.0},
-        #{'row_name': 'MV ML',       'BEO_G1': 0.0, 'BEO_G2': 0.0, 'BEO_G3': 0.0, 'BEC_G1': 0.0, 'BEC_G2': 0.0, 'BEC_G3': 0.0, 'UEO_G1': 0.0, 'UEO_G2': 0.0, 'UEO_G3': 0.0, 'UEC_G1': 0.0, 'UEC_G2': 0.0, 'UEC_G3': 0.0, 'BND_G1': 0.0, 'BND_G2': 0.0, 'BND_G3': 0.0},
-        {'row_name': 'RMS AP',      'BEO_G1': round(finalQueryDfG1['BEORMSAP'].mean(),2), 'BEO_G2': round(finalQueryDfG2['BEORMSAP'].mean(),2), 'BEO_G3': round(finalQueryDfG3['BEORMSAP'].mean(),2), 'BEC_G1': round(finalQueryDfG1['BECRMSAP'].mean(),2), 'BEC_G2': round(finalQueryDfG2['BECRMSAP'].mean(),2), 'BEC_G3': round(finalQueryDfG3['BECRMSAP'].mean(),2), 'UEO_G1': round(finalQueryDfG1['UEORMSAP'].mean(),2), 'UEO_G2': round(finalQueryDfG2['UEORMSAP'].mean(),2),                                 'UEO_G3': round(finalQueryDfG3['UEORMSAP'].mean(),2), 'UEC_G1': round(finalQueryDfG1['UECRMSAP'].mean(),2),                   'UEC_G2': round(finalQueryDfG2['UECRMSAP'].mean(),2), 'UEC_G3': round(finalQueryDfG3['UECRMSAP'].mean(),2), 'BND_G1': 0.0, 'BND_G2': 0.0, 'BND_G3': 0.0},
-        {'row_name': 'RMS ML',      'BEO_G1': round(finalQueryDfG1['BEORMSML'].mean(),2), 'BEO_G2': round(finalQueryDfG2['BEORMSML'].mean(),2), 'BEO_G3': round(finalQueryDfG3['BEORMSML'].mean(),2), 'BEC_G1': round(finalQueryDfG1['BECRMSML'].mean(),2), 'BEC_G2': round(finalQueryDfG2['BECRMSML'].mean(),2), 'BEC_G3': round(finalQueryDfG3['BECRMSML'].mean(),2), 'UEO_G1': round(finalQueryDfG1['UEORMSML'].mean(),2), 'UEO_G2': round(finalQueryDfG2['UEORMSML'].mean(),2),                                 'UEO_G3': round(finalQueryDfG3['UEORMSML'].mean(),2), 'UEC_G1': round(finalQueryDfG1['UECRMSML'].mean(),2),                   'UEC_G2': round(finalQueryDfG2['UECRMSML'].mean(),2), 'UEC_G3': round(finalQueryDfG3['UECRMSML'].mean(),2), 'BND_G1': 0.0, 'BND_G2': 0.0, 'BND_G3': 0.0},
-        {'row_name': 'F80 AP (Hz)', 'BEO_G1': round(finalQueryDfG1['BEOF80AP'].mean(),2), 'BEO_G2': round(finalQueryDfG2['BEOF80AP'].mean(),2), 'BEO_G3': round(finalQueryDfG3['BEOF80AP'].mean(),2), 'BEC_G1': round(finalQueryDfG1['BECF80AP'].mean(),2), 'BEC_G2': round(finalQueryDfG2['BECF80AP'].mean(),2), 'BEC_G3': round(finalQueryDfG3['BECF80AP'].mean(),2), 'UEO_G1': round(finalQueryDfG1['UEOF80AP'].mean(),2), 'UEO_G2': round(finalQueryDfG2['UEOF80AP'].mean(),2),                                 'UEO_G3': round(finalQueryDfG3['UEOF80AP'].mean(),2), 'UEC_G1': round(finalQueryDfG1['UECF80AP'].mean(),2),                   'UEC_G2': round(finalQueryDfG2['UECF80AP'].mean(),2), 'UEC_G3': round(finalQueryDfG3['UECF80AP'].mean(),2), 'BND_G1': 0.0, 'BND_G2': 0.0, 'BND_G3': 0.0},
-        #{'row_name': 'F80 ML (Hz)', 'BEO_G1': 0.0, 'BEO_G2': 0.0, 'BEO_G3': 0.0, 'BEC_G1': 0.0, 'BEC_G2': 0.0, 'BEC_G3': 0.0, 'UEO_G1': 0.0, 'UEO_G2': 0.0, 'UEO_G3': 0.0, 'UEC_G1': 0.0, 'UEC_G2': 0.0, 'UEC_G3': 0.0, 'BND_G1': 0.0, 'BND_G2': 0.0, 'BND_G3': 0.0},
-        {'row_name': 'Sent AP',     'BEO_G1': round(finalQueryDfG1['BEOSENTAP'].mean(),2), 'BEO_G2': round(finalQueryDfG2['BEOSENTAP'].mean(),2), 'BEO_G3': round(finalQueryDfG3['BEOSENTAP'].mean(),2), 'BEC_G1': round(finalQueryDfG1['BECSENTAP'].mean(),2), 'BEC_G2': round(finalQueryDfG2['BECSENTAP'].mean(),2), 'BEC_G3': round(finalQueryDfG3['BECSENTAP'].mean(),2), 'UEO_G1': round(finalQueryDfG1['UEOSENTAP'].mean(),2), 'UEO_G2': round(finalQueryDfG2['UEOSENTAP'].mean(),2),                         'UEO_G3': round(finalQueryDfG3['UEOSENTAP'].mean(),2), 'UEC_G1': round(finalQueryDfG1['UECSENTAP'].mean(),2),                 'UEC_G2': round(finalQueryDfG2['UECSENTAP'].mean(),2), 'UEC_G3': round(finalQueryDfG3['UECSENTAP'].mean(),2), 'BND_G1': 0.0, 'BND_G2': 0.0, 'BND_G3': 0.0},
-        {'row_name': 'Sent ML',     'BEO_G1': round(finalQueryDfG1['BEOSENTML'].mean(),2), 'BEO_G2': round(finalQueryDfG2['BEOSENTML'].mean(),2), 'BEO_G3': round(finalQueryDfG3['BEOSENTML'].mean(),2), 'BEC_G1': round(finalQueryDfG1['BECSENTML'].mean(),2), 'BEC_G2': round(finalQueryDfG2['BECSENTML'].mean(),2), 'BEC_G3': round(finalQueryDfG3['BECSENTML'].mean(),2), 'UEO_G1': round(finalQueryDfG1['UEOSENTML'].mean(),2), 'UEO_G2': round(finalQueryDfG2['UEOSENTML'].mean(),2),                         'UEO_G3': round(finalQueryDfG3['UEOSENTML'].mean(),2), 'UEC_G1': round(finalQueryDfG1['UECSENTML'].mean(),2),                 'UEC_G2': round(finalQueryDfG2['UECSENTML'].mean(),2), 'UEC_G3': round(finalQueryDfG3['UECSENTML'].mean(),2), 'BND_G1': 0.0, 'BND_G2': 0.0, 'BND_G3': 0.0},
-        {'row_name': 'CrossSent',    'BEO_G1': round(finalQueryDfG1['BEOCROSSSENT'].mean(),2), 'BEO_G2': round(finalQueryDfG2['BEOCROSSSENT'].mean(),2), 'BEO_G3': round(finalQueryDfG3['BEOCROSSSENT'].mean(),2), 'BEC_G1': round(finalQueryDfG1['BECCROSSSENT'].mean(),2), 'BEC_G2': round(finalQueryDfG2['BECCROSSSENT'].mean(),2), 'BEC_G3': round(finalQueryDfG3['BECCROSSSENT'].mean(),2), 'UEO_G1': round(finalQueryDfG1['UEOCROSSSENT'].mean(),2), 'UEO_G2': round(finalQueryDfG2['UEOCROSSSENT'].mean(),2), 'UEO_G3': round(finalQueryDfG3['UEOCROSSSENT'].mean(),2), 'UEC_G1': round(finalQueryDfG1['UECCROSSSENT'].mean(),2),          'UEC_G2': round(finalQueryDfG2['UECCROSSSENT'].mean(),2), 'UEC_G3': round(finalQueryDfG3['UECCROSSSENT'].mean(),2), 'BND_G1': 0.0, 'BND_G2': 0.0, 'BND_G3': 0.0},
+        {'row_name': 'Area',        'BEO_G1': round(finalQueryDfG1['BEOAREA'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEOAREA'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEOAREA'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECAREA'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECAREA'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECAREA'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEOAREA'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEOAREA'].mean(),4),                                         'UEO_G3': round(finalQueryDfG3['UEOAREA'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECAREA'].mean(),4),                     'UEC_G2': round(finalQueryDfG2['UECAREA'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECAREA'].mean(),4), 'BND_G1': round(finalQueryDfG1['BNDAREA'].mean(),4), 'BND_G2': round(finalQueryDfG2['BNDAREA'].mean(),4), 'BND_G3': round(finalQueryDfG3['BNDAREA'].mean(),4)},
+        {'row_name': 'Range AP',    'BEO_G1': round(finalQueryDfG1['BEORANGEAP'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEORANGEAP'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEORANGEAP'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECRANGEAP'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECRANGEAP'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECRANGEAP'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEORANGEAP'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEORANGEAP'].mean(),4),                 'UEO_G3': round(finalQueryDfG3['UEORANGEAP'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECRANGEAP'].mean(),4),               'UEC_G2': round(finalQueryDfG2['UECRANGEAP'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECRANGEAP'].mean(),4), 'BND_G1': round(finalQueryDfG1['BNDRANGEAP'].mean(),4), 'BND_G2': round(finalQueryDfG2['BNDRANGEAP'].mean(),4), 'BND_G3': round(finalQueryDfG3['BNDRANGEAP'].mean(),4)},
+        {'row_name': 'Range ML',    'BEO_G1': round(finalQueryDfG1['BEORANGEML'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEORANGEML'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEORANGEML'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECRANGEML'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECRANGEML'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECRANGEML'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEORANGEML'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEORANGEML'].mean(),4),                 'UEO_G3': round(finalQueryDfG3['UEORANGEML'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECRANGEML'].mean(),4),               'UEC_G2': round(finalQueryDfG2['UECRANGEML'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECRANGEML'].mean(),4), 'BND_G1': round(finalQueryDfG1['BNDRANGEML'].mean(),4), 'BND_G2': round(finalQueryDfG2['BNDRANGEML'].mean(),4), 'BND_G3': round(finalQueryDfG3['BNDRANGEML'].mean(),4)},
+        {'row_name': 'MV AP',      'BEO_G1': round(finalQueryDfG1['BEOSPEEDAP'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEOSPEEDAP'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEOSPEEDAP'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECSPEEDAP'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECSPEEDAP'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECSPEEDAP'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEOSPEEDAP'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEOSPEEDAP'].mean(),4),                  'UEO_G3': round(finalQueryDfG3['UEOSPEEDAP'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECSPEEDAP'].mean(),4),               'UEC_G2': round(finalQueryDfG2['UECSPEEDAP'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECSPEEDAP'].mean(),4), 'BND_G1': '-', 'BND_G2': '-', 'BND_G3': '-'},
+        {'row_name': 'MV AP',      'BEO_G1': round(finalQueryDfG1['BEOSPEEDML'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEOSPEEDML'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEOSPEEDML'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECSPEEDML'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECSPEEDML'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECSPEEDML'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEOSPEEDML'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEOSPEEDML'].mean(),4),                  'UEO_G3': round(finalQueryDfG3['UEOSPEEDML'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECSPEEDML'].mean(),4),               'UEC_G2': round(finalQueryDfG2['UECSPEEDML'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECSPEEDML'].mean(),4), 'BND_G1': '-', 'BND_G2': '-', 'BND_G3': '-'},
+        {'row_name': 'RMS AP',      'BEO_G1': round(finalQueryDfG1['BEORMSAP'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEORMSAP'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEORMSAP'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECRMSAP'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECRMSAP'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECRMSAP'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEORMSAP'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEORMSAP'].mean(),4),                                 'UEO_G3': round(finalQueryDfG3['UEORMSAP'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECRMSAP'].mean(),4),                   'UEC_G2': round(finalQueryDfG2['UECRMSAP'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECRMSAP'].mean(),4), 'BND_G1': '-', 'BND_G2': '-', 'BND_G3': '-'},
+        {'row_name': 'RMS ML',      'BEO_G1': round(finalQueryDfG1['BEORMSML'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEORMSML'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEORMSML'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECRMSML'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECRMSML'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECRMSML'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEORMSML'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEORMSML'].mean(),4),                                 'UEO_G3': round(finalQueryDfG3['UEORMSML'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECRMSML'].mean(),4),                   'UEC_G2': round(finalQueryDfG2['UECRMSML'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECRMSML'].mean(),4), 'BND_G1': '-', 'BND_G2': '-', 'BND_G3': '-'},
+        {'row_name': 'F80 AP (Hz)', 'BEO_G1': round(finalQueryDfG1['BEOF80AP'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEOF80AP'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEOF80AP'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECF80AP'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECF80AP'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECF80AP'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEOF80AP'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEOF80AP'].mean(),4),                                 'UEO_G3': round(finalQueryDfG3['UEOF80AP'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECF80AP'].mean(),4),                   'UEC_G2': round(finalQueryDfG2['UECF80AP'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECF80AP'].mean(),4), 'BND_G1': '-', 'BND_G2': '-', 'BND_G3': '-'},
+        #{'row_name': 'F80 ML (Hz)', 'BEO_G1': '-', 'BEO_G2': '-', 'BEO_G3': '-', 'BEC_G1': '-', 'BEC_G2': '-', 'BEC_G3': '-', 'UEO_G1': '-', 'UEO_G2': '-', 'UEO_G3': '-', 'UEC_G1': '-', 'UEC_G2': '-', 'UEC_G3': '-', 'BND_G1': '-', 'BND_G2': '-', 'BND_G3': '-'},
+        {'row_name': 'Sent AP',     'BEO_G1': round(finalQueryDfG1['BEOSENTAP'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEOSENTAP'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEOSENTAP'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECSENTAP'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECSENTAP'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECSENTAP'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEOSENTAP'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEOSENTAP'].mean(),4),                         'UEO_G3': round(finalQueryDfG3['UEOSENTAP'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECSENTAP'].mean(),4),                 'UEC_G2': round(finalQueryDfG2['UECSENTAP'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECSENTAP'].mean(),4), 'BND_G1': '-', 'BND_G2': '-', 'BND_G3': '-'},
+        {'row_name': 'Sent ML',     'BEO_G1': round(finalQueryDfG1['BEOSENTML'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEOSENTML'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEOSENTML'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECSENTML'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECSENTML'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECSENTML'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEOSENTML'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEOSENTML'].mean(),4),                         'UEO_G3': round(finalQueryDfG3['UEOSENTML'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECSENTML'].mean(),4),                 'UEC_G2': round(finalQueryDfG2['UECSENTML'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECSENTML'].mean(),4), 'BND_G1': '-', 'BND_G2': '-', 'BND_G3': '-'},
+        {'row_name': 'CrossSent',    'BEO_G1': round(finalQueryDfG1['BEOCROSSSENT'].mean(),4), 'BEO_G2': round(finalQueryDfG2['BEOCROSSSENT'].mean(),4), 'BEO_G3': round(finalQueryDfG3['BEOCROSSSENT'].mean(),4), 'BEC_G1': round(finalQueryDfG1['BECCROSSSENT'].mean(),4), 'BEC_G2': round(finalQueryDfG2['BECCROSSSENT'].mean(),4), 'BEC_G3': round(finalQueryDfG3['BECCROSSSENT'].mean(),4), 'UEO_G1': round(finalQueryDfG1['UEOCROSSSENT'].mean(),4), 'UEO_G2': round(finalQueryDfG2['UEOCROSSSENT'].mean(),4), 'UEO_G3': round(finalQueryDfG3['UEOCROSSSENT'].mean(),4), 'UEC_G1': round(finalQueryDfG1['UECCROSSSENT'].mean(),4),          'UEC_G2': round(finalQueryDfG2['UECCROSSSENT'].mean(),4), 'UEC_G3': round(finalQueryDfG3['UECCROSSSENT'].mean(),4), 'BND_G1': '-', 'BND_G2': '-', 'BND_G3': '-'},
     ]
 
     tableG = groups_response_table(table_dataG)
